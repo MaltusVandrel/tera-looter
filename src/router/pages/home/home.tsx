@@ -1,77 +1,41 @@
 import { useEffect, useState } from 'react';
 import {
-  estacoes,
   GAY_CALL_TYPE,
   type GayListEntry,
+  type GayListResult,
 } from '../../../structs/interface/list';
 import './home.scss';
 import { GayPopup } from '../../../components/gay-popup/gay-popup';
+import { colors } from '../../../app/data/basic-lists';
+import { runSet } from '../../../app/utils/gay-list-util';
 
 export const Home = () => {
-  const [drawnEntry, setDrawnEntry] = useState<Array<GayListEntry>>();
+  const set = colors;
+  const [drawns, setDrawns] = useState<Array<GayListResult>>(runSet(set));
   const [selectedEntry, setSelectedEntry] = useState<GayListEntry>();
 
-  const [callType, setCallType] = useState<string>('SIMPLE');
-
-  const entries = estacoes.entries;
-  const listSize = entries.length;
-  const getRandomEntry = () => {
-    const index = Math.floor(Math.random() * listSize);
-    const entry = entries[index];
-    return entry;
+  const doRunSet = () => {
+    setDrawns(runSet(set));
   };
-  const callBehaviourMap: {
-    [key in keyof typeof GAY_CALL_TYPE]: () => Array<GayListEntry>;
-  } = {
-    SIMPLE: () => {
-      return [getRandomEntry()];
-    },
-    BIASED: () => {
-      return [getRandomEntry()];
-    },
-    MULTIPLE: () => {
-      return [getRandomEntry(), getRandomEntry()];
-    },
-    UNRELIABLE: () => {
-      return [getRandomEntry()];
-    },
-  };
-  const doCall = () => {
-    console.log('callType: ' + callType);
-    setDrawnEntry(callBehaviourMap[callType as keyof typeof GAY_CALL_TYPE]);
-  };
-
   return (
     <>
       <div className="gay-entries">
-        {drawnEntry?.map((e, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedEntry(e)}>
-            {e.title}
-          </button>
+        {drawns?.map((draw, index) => (
+          <div key={index}>
+            <h3 key={index}>{draw.list.title}</h3>
+            {draw.entries.map((e, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedEntry(e)}>
+                {e.title}
+              </button>
+            ))}
+          </div>
         ))}
       </div>
-      <div>
-        <select onChange={(event) => setCallType(event.target.value)}>
-          {Object.keys(GAY_CALL_TYPE).map((key, index) => {
-            const gayKey = key as keyof typeof GAY_CALL_TYPE;
-            return (
-              <option
-                key={index}
-                value={key}>
-                {GAY_CALL_TYPE[gayKey]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      <button onClick={doCall}>{estacoes.title}</button>
-      <ul>
-        {entries.map((entry: GayListEntry, index) => {
-          return <li key={index}>{entry.title}</li>;
-        })}
-      </ul>
+
+      <button onClick={doRunSet}>{set.title}</button>
+
       {selectedEntry && (
         <GayPopup
           entry={selectedEntry}
